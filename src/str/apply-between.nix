@@ -17,28 +17,28 @@
       }
       (prev: i: let
         entry = sundry.list.at i insides;
-        substring = entry.substr;
-        replacement = fn substring;
+        span = sundry.str.len lsep + sundry.str.len entry.substr + sundry.str.len rsep;
+        replacement = fn entry.substr;
       in {
         str =
           sundry.str.replace-at
-          (entry.pos + prev.offset)
-          (sundry.str.len entry.substr)
+          (entry.pos - sundry.str.len lsep + prev.offset)
+          span
           replacement
           prev.str;
-        offset = prev.offset + sundry.str.len replacement - sundry.str.len substring;
+        offset = prev.offset + sundry.str.len replacement - span;
       });
   in
     result.str;
 
   tests = [
     [
-      (apply-between (str: "${str}-changed") "[" "]" "A[X]B[Y]C[Z]D")
-      "A[X-changed]B[Y-changed]C[Z-changed]D"
+      (apply-between lib.id "[" "]" "A[X]B[Y]C[Z]D")
+      "AXBYCZD"
     ]
     [
       (apply-between (str: "-") "[" "]" "[[][]][]")
-      "[-][-]"
+      "--"
     ]
     [(apply-between (str: "X") "[" "]" "ABC") "ABC"]
   ];

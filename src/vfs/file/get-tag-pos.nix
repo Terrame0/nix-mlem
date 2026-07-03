@@ -20,15 +20,15 @@
       tag-list = [];
     };
   in [
-    [(get-tag-pos (e: with e; tag {x = "1";}) file) 0]
-    [(get-tag-pos (e: with e; tag {x = "2";}) file) (-1)]
-    [(get-tag-pos (e: with e; tag {x = [];}) file) 0]
-    [(get-tag-pos (e: with e; tag {x = ["1" "2"];}) file) 0]
-    [(get-tag-pos (e: with e; tag ({y = "1";} // {z = "1";})) file) 1]
-    [(get-tag-pos (e: with e; tag ({y = "2";} // {z = "1";})) file) (-1)]
-    [(get-tag-pos (e: with e; tag ({y = [];} // {z = "1";})) file) 1]
-    [(get-tag-pos (e: with e; tag ({y = ["1" "2"];} // {z = "1";})) file) 1]
-    [(get-tag-pos (e: with e; tag ({x = "1";} // {y = "1";})) file) (-1)]
-    [(get-tag-pos (e: with e; tag {x = "1";}) blank) (-1)]
+    [(get-tag-pos (_: with _; tag {x = "1";}) file) 0]
+    [(get-tag-pos (_: with _; tag {x = "2";}) file) (-1)]
+    [(get-tag-pos (_: with _; tag {x = [];}) file) 0]
+    [(get-tag-pos (_: with _; tag {x = ["1" "2"];}) file) 0]
+    [(get-tag-pos (_: with _; tag ({y = "1";} // {z = "1";})) file) 1]
+    [(get-tag-pos (_: with _; tag ({y = "2";} // {z = "1";})) file) (-1)]
+    [(get-tag-pos (_: with _; tag ({y = [];} // {z = "1";})) file) 1]
+    [(get-tag-pos (_: with _; tag ({y = ["1" "2"];} // {z = "1";})) file) 1]
+    [(get-tag-pos (_: with _; tag ({x = "1";} // {y = "1";})) file) (-1)]
+    [(get-tag-pos (_: with _; tag {x = "1";}) blank) (-1)]
   ];
 }
