@@ -37,8 +37,8 @@
       "AXBYCZD"
     ]
     [
-      (apply-between (str: "-") "[" "]" "[[][]][]")
-      "--"
+      (apply-between (str: "X") "[" "]" "[[][]][]")
+      "XX"
     ]
     [(apply-between (str: "X") "[" "]" "ABC") "ABC"]
   ];
