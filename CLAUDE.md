@@ -20,4 +20,3 @@ When you add, rename, or remove a doc under `.agent-docs/`, update this index â€
 @.agent-docs/authoring.md
 @.agent-docs/testing.md
 @.agent-docs/test-naming.md
-@.agent-docs/docs-style.md

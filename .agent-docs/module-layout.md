@@ -4,7 +4,7 @@ How files under `src/` are organized and how that organization maps to the publi
 
 ## File path = namespace path
 
-The framework ([core/glob-functions.nix](../core/glob-functions.nix)) walks every `.nix` file under `src/` and exposes its attributes (minus `tests`) at `sundry.<dirname>`, where `<dirname>` is the file's directory relative to `src/`. The filename itself is dropped.
+The framework ([core/glob-functions.nix](../../core/glob-functions.nix)) walks every `.nix` file under `src/` and exposes its attributes (minus `tests`) at `sundry.<dirname>`, where `<dirname>` is the file's directory relative to `src/`. The filename itself is dropped.
 
 | File | Exports at | Function ends up at |
 |---|---|---|
@@ -23,22 +23,22 @@ The criterion is cohesion, not file count. Keep things together when they're uni
 
 Cohesive clusters that live in one file:
 
-- [src/vfs/path/getters.nix](../src/vfs/path/getters.nix) — `get.{name, stem, ext, str}`, facets of one object.
-- [src/vfs/path/setters.nix](../src/vfs/path/setters.nix) — `set.{name, stem, ext}`, the mirror of `get`; reuses the getters to round-trip a path's name.
-- [src/list/accessors.nix](../src/list/accessors.nix) — `at`, `incl-init`/`incl-tail`, `excl-last`/`excl-head`; list-edge accessors, same shape.
-- [src/str/find-after.nix](../src/str/find-after.nix) — `find-after` and `rfind-after`, mirror functions.
-- [src/str/trim.nix](../src/str/trim.nix) — `trim`, `trim-left`, `trim-right`, same shape.
-- [src/attrs/compare.nix](../src/attrs/compare.nix) — `compare` and `compare-until` (the latter is a generalization).
+- [src/vfs/path/getters.nix](../../src/vfs/path/getters.nix) — `get.{name, stem, ext, str}`, facets of one object.
+- [src/vfs/path/setters.nix](../../src/vfs/path/setters.nix) — `set.{name, stem, ext}`, the mirror of `get`; reuses the getters to round-trip a path's name.
+- [src/list/accessors.nix](../../src/list/accessors.nix) — `at`, `incl-init`/`incl-tail`, `excl-last`/`excl-head`; list-edge accessors, same shape.
+- [src/str/find-after.nix](../../src/str/find-after.nix) — `find-after` and `rfind-after`, mirror functions.
+- [src/str/trim.nix](../../src/str/trim.nix) — `trim`, `trim-left`, `trim-right`, same shape.
+- [src/attrs/compare.nix](../../src/attrs/compare.nix) — `compare` and `compare-until` (the latter is a generalization).
 
 Cases that earned a split:
 
-- `src/vfs/dir/transforms.nix` (since removed) bundled `reform`, `filter`, `collapse`, `walk` with four different test fixtures in one `tests` block. Now: [reform.nix](../src/vfs/dir/reform.nix), [filter.nix](../src/vfs/dir/filter.nix), [collapse.nix](../src/vfs/dir/collapse.nix), [walk.nix](../src/vfs/dir/walk.nix).
+- `src/vfs/dir/transforms.nix` (since removed) bundled `reform`, `filter`, `collapse`, `walk` with four different test fixtures in one `tests` block. Now: [reform.nix](../../src/vfs/dir/reform.nix), [filter.nix](../../src/vfs/dir/filter.nix), [collapse.nix](../../src/vfs/dir/collapse.nix), [walk.nix](../../src/vfs/dir/walk.nix).
 
 The split usually pays off when the test block, not the function block, is what's making the file hard to read.
 
 ## Where helpers live
 
-A helper goes in the namespace whose domain it operates on, not in the namespace that happens to call it. [src/vfs/file/get-tag-pos.nix](../src/vfs/file/get-tag-pos.nix) walks a file's `tag-list`, so it lives in `vfs/file/` next to the node fields it reads — not wherever it happens to be called from. Co-locating with the data type beats co-locating with the consumer.
+A helper goes in the namespace whose domain it operates on, not in the namespace that happens to call it. [src/vfs/file/get-tag-pos.nix](../../src/vfs/file/get-tag-pos.nix) walks a file's `tag-list`, so it lives in `vfs/file/` next to the node fields it reads — not wherever it happens to be called from. Co-locating with the data type beats co-locating with the consumer.
 
 ## Renaming / restructuring
 

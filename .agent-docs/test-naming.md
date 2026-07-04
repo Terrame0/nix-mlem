@@ -13,11 +13,11 @@ A character-class scheme for test data — fixture paths, inline attrsets, strin
 | Semantic words (carry domain meaning) | unchanged | `"first"`, `"second"`, `name`, `deps` |
 | Numbers, literals outside the scheme | unchanged | `[1 2 3]`, `"/"`, `"["` |
 
-Lambda parameters (`acc`, `i`, `x` in [src/for.nix](../src/for.nix), [src/while.nix](../src/while.nix)) are not test data — they describe a role inside the function — so they stay lowercase.
+Lambda parameters (`acc`, `i`, `x` in [src/for.nix](../../src/for.nix), [src/while.nix](../../src/while.nix)) are not test data — they describe a role inside the function — so they stay lowercase.
 
 ## VFS fixtures
 
-The on-disk fixture at [tests/vfs-test-dir/tags/](../tests/vfs-test-dir/tags/) is the canonical example:
+The on-disk fixture at [tests/vfs-test-dir/tags/](../../tests/vfs-test-dir/tags/) is the canonical example:
 
 ```
 A{a:1}
@@ -33,7 +33,7 @@ E
 
 Reading any path is mechanical: uppercase = file, `=` = directory step, lowercase-colon-digit = tag annotation.
 
-File extensions (`.txt`, `.ini`, `.scss`) are allowed when a test needs to distinguish them — see [tests/vfs-test-dir/filtering/](../tests/vfs-test-dir/filtering/), where the filter predicate keys off `.txt` vs `.ini`. File contents are out of scope: usually `contents of <NAME>`, but tests that match against a specific value (e.g. `override` in `=/=/E.ini`) deviate freely.
+File extensions (`.txt`, `.ini`, `.scss`) are allowed when a test needs to distinguish them — see [tests/vfs-test-dir/filtering/](../../tests/vfs-test-dir/filtering/), where the filter predicate keys off `.txt` vs `.ini`. File contents are out of scope: usually `contents of <NAME>`, but tests that match against a specific value (e.g. `override` in `=/=/E.ini`) deviate freely.
 
 ### Sort-order caveat
 
@@ -41,4 +41,4 @@ File extensions (`.txt`, `.ini`, `.scss`) are allowed when a test needs to disti
 
 ## Inline tests
 
-In `tests = [...]` blocks across `src/`, the same scheme applies to attrset keys and string-content placeholders. [src/attrs/compare.nix](../src/attrs/compare.nix) is the representative example: both keys (`A`, `B`, `C`) and string values (`"A"`, `"B.C.D"`) follow the convention together. Multi-letter groups separated by `.` or `-` are uppercased per letter — `"B.C.D"`, `A-M`.
+In `tests = [...]` blocks across `src/`, the same scheme applies to attrset keys and string-content placeholders. [src/attrs/compare.nix](../../src/attrs/compare.nix) is the representative example: both keys (`A`, `B`, `C`) and string values (`"A"`, `"B.C.D"`) follow the convention together. Multi-letter groups separated by `.` or `-` are uppercased per letter — `"B.C.D"`, `A-M`.
