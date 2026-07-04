@@ -95,8 +95,8 @@ in rec {
     did-not-pass = lib.pipe matched-with-defaults [
       (collapse-until (
         path: pair: let
-          value = sundry.list.at 0 pair;
-          spec = sundry.list.at 1 pair;
+          decomposition = sundry.list.zip-to-attrs ["value" "spec"] pair;
+          inherit (decomposition) value spec;
           passed =
             if spec.nullable or false && value == null
             then true
