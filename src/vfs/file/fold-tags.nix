@@ -7,8 +7,8 @@
     lib.pipe file.tag-list [
       (sundry.list.zip (sundry.range [(lib.length file.tag-list)]))
       (lib.foldl (acc: pair: let
-        decomposition = sundry.list.zip-to-attrs ["id" "value"] pair;
-        inherit (decomposition) id value;
+        decomposed = sundry.list.zip-to-attrs ["id" "value"] pair;
+        inherit (decomposed) id value;
       in
         fn acc value id)
       init)

@@ -40,6 +40,8 @@ The split usually pays off when the test block, not the function block, is what'
 
 A helper goes in the namespace whose domain it operates on, not in the namespace that happens to call it. [src/vfs/file/get-tag-pos.nix](../../src/vfs/file/get-tag-pos.nix) walks a file's `tag-list`, so it lives in `vfs/file/` next to the node fields it reads — not wherever it happens to be called from. Co-locating with the data type beats co-locating with the consumer.
 
+The domain is the side of the signature the function is *about*, not the argument or return type mechanically. [src/vfs/path/from-str.nix](../../src/vfs/path/from-str.nix) (`string → path`) and `get.str` (`path → string`) both live in `vfs/path/`, though one takes and the other returns a plain string — `path` is what each is about, `string` is just raw material. By contrast [src/str/to-segments.nix](../../src/str/to-segments.nix) (empty-aware split, `sep → string → [string]`) knows nothing about paths, so it lives in `str/`; `from-str` reuses it and adds the path-specific `/` and trim. Ask "what type is this *about*?" — not "what type is in the signature?".
+
 ## Renaming / restructuring
 
 A split or move usually shifts the public namespace. Check call sites with `grep -rn` first; internal-only callers update in the same commit, external consumers need a deprecation path.

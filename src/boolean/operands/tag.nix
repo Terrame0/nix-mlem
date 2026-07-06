@@ -9,8 +9,8 @@
     matched =
       lib.all lib.id
       (lib.mapAttrsToList (key: pair: let
-        decomposition = sundry.list.zip-to-attrs ["values" "wanted-values"] pair;
-        inherit (decomposition) values wanted-values;
+        decomposed = sundry.list.zip-to-attrs ["values" "wanted-values"] pair;
+        inherit (decomposed) values wanted-values;
       in
         wanted-values == [] || sundry.list.intersect (lib.toList values) (lib.toList wanted-values) != [])
       diff.matched);

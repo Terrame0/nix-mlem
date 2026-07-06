@@ -1,7 +1,7 @@
 {sundry, ...}: rec {
   for = args-list: init-state: op: let
-    decomposition = sundry.list.zip-to-attrs ["init-id" "step" "cond"] args-list;
-    inherit (decomposition) init-id step cond;
+    decomposed = sundry.list.zip-to-attrs ["init-id" "step" "cond"] args-list;
+    inherit (decomposed) init-id step cond;
     recurse = prev: i:
       if (cond i && !(prev ? break && prev.break))
       then recurse (prev // (op prev i)) (step i)

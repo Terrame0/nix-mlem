@@ -1,8 +1,4 @@
-{
-  lib,
-  sundry,
-  ...
-}: rec {
+{sundry, ...}: rec {
   from-str = path-str:
     sundry.str.to-segments "/"
     (sundry.str.trim-left "/"
