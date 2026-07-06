@@ -4,7 +4,7 @@
   ...
 }: rec {
   from-str = path-str:
-    lib.splitString "/"
+    sundry.str.to-segments "/"
     (sundry.str.trim-left "/"
       (builtins.unsafeDiscardStringContext (toString path-str)));
   tests = [
@@ -13,5 +13,6 @@
       ["A" "B" "C.txt"]
     ]
     [(from-str "A/B") ["A" "B"]]
+    [(from-str "") []]
   ];
 }
