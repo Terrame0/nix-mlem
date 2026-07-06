@@ -10,7 +10,7 @@
 
   walk-within-tag = expr-fn:
     sundry.attrs.walk-matched-until
-    (path: file: sundry.boolean.expr expr-fn (sundry.attrs.merge.concat file.tag-list))
+    (path: file: sundry.boolean.expr expr-fn file.tag-list)
     sundry.vfs.is-leaf-node;
 
   tests = let

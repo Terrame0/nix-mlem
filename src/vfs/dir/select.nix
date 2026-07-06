@@ -6,7 +6,7 @@
 }: {
   select-by-tag = expr-fn:
     sundry.vfs.dir.filter
-    (path: file: sundry.boolean.expr expr-fn (sundry.attrs.merge.concat file.tag-list));
+    (path: file: sundry.boolean.expr expr-fn file.tag-list);
 
   tests = let
     tag-dir = lib.pipe "${flake-root}/tests/vfs-test-dir/tags" [
