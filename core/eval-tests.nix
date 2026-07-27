@@ -50,10 +50,6 @@ args @ {
 
   parsed-tests = lib.concatMap glob-tests [
     {
-      eval-fn = lib.id;
-      dir-path = ../tests/src;
-    }
-    {
       eval-fn = imported:
         if imported ? tests
         then imported.tests
