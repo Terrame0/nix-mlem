@@ -5,7 +5,7 @@
 }: rec {
   from-text = vfs-path: text:
     if vfs-path == []
-    then throw "cannot create a VFS file with an empty path"
+    then throw "cannot create a valid vfs node with an empty path"
     else assert lib.isString text; lib.setAttrByPath vfs-path {inherit text;};
   tests = [
     [

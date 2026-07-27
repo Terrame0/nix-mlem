@@ -1,0 +1,3 @@
+{lib, ...}: {
+  split = lib.splitString;
+}
