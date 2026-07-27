@@ -1,6 +1,12 @@
-{lib, ...}: rec {
+{
+  sundry,
+  lib,
+  ...
+}: rec {
   from-text = vfs-path: text:
-    assert lib.isString text; lib.setAttrByPath vfs-path {inherit text;};
+    if vfs-path == []
+    then throw "cannot create a VFS file with an empty path"
+    else assert lib.isString text; lib.setAttrByPath vfs-path {inherit text;};
   tests = [
     [
       (from-text ["B.txt"] "contents of B.txt")
@@ -20,5 +26,6 @@
         };
       }
     ]
+    [(sundry.does-throw (from-text [] "contents")) true]
   ];
 }

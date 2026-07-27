@@ -23,5 +23,9 @@
         };
       }
     ]
+    [
+      (sundry.does-throw (from-src [] "${flake-root}/tests/vfs-test-dir/test-files/A.txt"))
+      true
+    ]
   ];
 }

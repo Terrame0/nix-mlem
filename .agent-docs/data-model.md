@@ -43,6 +43,8 @@ A path is a **list of segments**, not a string; the last segment is the file nam
 ["A" "B" "C.txt"]
 ```
 
+File constructors require a non-empty path. An empty path has no file-name segment and would create a leaf at the tree root, which is not a valid VFS node shape.
+
 Conversions: [from-str](../../src/vfs/path/from-str.nix) (`"A/B/C.txt"` → `["A" "B" "C.txt"]`) and `get.str` (`["A" "B"]` → `"A/B"`).
 
 Accessors mirror as getters ([getters.nix](../../src/vfs/path/getters.nix)) and setters ([setters.nix](../../src/vfs/path/setters.nix)); all take the path last so they compose in a pipe:
