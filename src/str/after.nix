@@ -1,6 +1,10 @@
-{lib, ...}: rec {
+{
+  sundry,
+  lib,
+  ...
+}: rec {
   after = sep: string:
-    lib.concatStringsSep sep (lib.tail (lib.splitString sep string));
+    sundry.str.join-with sep (lib.tail (sundry.str.split sep string));
 
   tests = [
     [(after "." "A.B") "B"]

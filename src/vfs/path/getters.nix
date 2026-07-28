@@ -9,9 +9,9 @@
       then throw "\nan empty path has no name"
       else lib.last path;
     name-split = path:
-      lib.splitString "." (name path);
+      sundry.str.split "." (name path);
     stem = path:
-      lib.concatStringsSep "."
+      sundry.str.join-with "."
       (sundry.list.incl-init (name-split path));
     ext = path:
       sundry.is-null

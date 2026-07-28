@@ -1,8 +1,8 @@
-{lib, ...}: rec {
+{sundry, ...}: rec {
   to-segments = sep: string:
     if string == ""
     then []
-    else lib.splitString sep string;
+    else sundry.str.split sep string;
 
   tests = [
     [(to-segments "/" "A/B/C") ["A" "B" "C"]]

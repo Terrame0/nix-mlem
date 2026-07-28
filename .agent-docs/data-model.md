@@ -33,7 +33,7 @@ A directory maps a path segment to a child node:
 `text` and `origin` are **not** mutually exclusive across a node's life — they exclude only as a state transition:
 
 - **Imported** ([from-src](../../src/vfs/file/from-src.nix)) — the leaf carries **both** `text` (read into memory) and `origin` (where it was read from).
-- **Materialized** ([materialize](../../src/vfs/dir/materialize.nix)) — `text` is **dropped** and `origin` is overwritten with the new store path, so the materialized leaf carries `origin` alone. Dropping `text` removes any chance of it drifting from the file on disk; to get in-memory contents back, re-import. Materialize is the final step in a pipeline, so overwriting the import path with the store path loses nothing still needed.
+- **Materialized** ([materialize](../../src/vfs/dir/materialize.nix)) — returns `{ drv, dir }`. `dir` is the evaluation-time VFS index; `drv` is the build-time materialization of that index. In `dir`, `text` is **dropped** and `origin` is overwritten with the new store path, so each materialized leaf carries `origin` alone. Dropping `text` removes any chance of it drifting from the file on disk; to get in-memory contents back, re-import. The top-level `drv` is the whole materialized directory as a Nix build artifact, while each leaf `origin` is the concrete file path inside it.
 
 ## Path
 
@@ -59,4 +59,6 @@ Stem/ext split on `.` with the **last** component as the ext: `archive.tar.gz` �
 
 ## Traversals
 
-`sundry.vfs.dir.{walk, collapse, reform, filter, materialize, path-strs}` recurse while a node is a directory and stop at leaves, using `is-leaf-node` as the `cond`. A malformed node (neither leaf nor directory) throws with its path instead of overflowing the stack.
+`sundry.vfs.dir.{walk, collapse, reform, filter, path-strs}` recurse while a node is a directory and stop at leaves, using `is-leaf-node` as the `cond`. A malformed node (neither leaf nor directory) throws with its path instead of overflowing the stack.
+
+`sundry.vfs.dir.materialize` consumes a VFS directory and returns `{ drv, dir }`: keep piping through `result.dir` for more VFS directory operations, or use `result.drv` when a Nix derivation for the whole materialized directory is needed.

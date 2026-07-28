@@ -1,6 +1,6 @@
-{lib, ...}: rec {
+{sundry, ...}: rec {
   apply-to-lines = fn: str:
-    lib.concatStringsSep "\n" (map fn (lib.splitString "\n" str));
+    sundry.str.join-with "\n" (map fn (sundry.str.split "\n" str));
   tests = [
     [
       (apply-to-lines

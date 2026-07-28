@@ -1,6 +1,10 @@
-{lib, ...}: rec {
+{
+  sundry,
+  lib,
+  ...
+}: rec {
   before = sep: string:
-    lib.head (lib.splitString sep string);
+    lib.head (sundry.str.split sep string);
 
   tests = [
     [(before "." "A.B") "A"]

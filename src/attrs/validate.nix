@@ -25,7 +25,7 @@
           else {}))
       lib.mergeAttrsList
     ];
-  concat-path = strs: lib.concatStringsSep " -> " (map (str: "'${str}'") strs);
+  concat-path = strs: sundry.str.join-with " -> " (map (str: "'${str}'") strs);
   format = lib.generators.toPretty {multiline = false;};
 in rec {
   validate = template-in: attrs: let
@@ -80,7 +80,7 @@ in rec {
       [
         (collapse-until
           (path: value: "  ${concat-path path} | ${value.desc or "..."}"))
-        (lib.concatStringsSep "\n")
+        (sundry.str.join-with "\n")
       ];
 
     extra =
@@ -89,7 +89,7 @@ in rec {
       [
         (collapse-until
           (path: value: "  ${concat-path path} = ${format value}"))
-        (lib.concatStringsSep "\n")
+        (sundry.str.join-with "\n")
       ];
 
     did-not-pass = lib.pipe matched-with-defaults [
@@ -111,7 +111,7 @@ in rec {
           else ["  ${concat-path path} = ${format value} | ${spec.desc}"]
       ))
       lib.concatLists
-      (lib.concatStringsSep "\n")
+      (sundry.str.join-with "\n")
     ];
     values =
       lib.mapAttrsRecursive

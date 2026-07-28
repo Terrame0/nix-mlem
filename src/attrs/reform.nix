@@ -49,7 +49,7 @@ in rec {
         (path: value: value != 0)
         (path: value: lib.length path > 1)
         (path: value: {
-          path = [(lib.concatStringsSep "." path)];
+          path = [(sundry.str.join-with "." path)];
           value = "x";
         })
         attrs)
@@ -90,7 +90,7 @@ in rec {
       (reform-until
         (path: value: lib.length path > 1)
         (path: value: {
-          path = [(lib.concatStringsSep "." path)];
+          path = [(sundry.str.join-with "." path)];
           value = "x";
         })
         attrs)
@@ -104,7 +104,7 @@ in rec {
     [
       (reform
         (path: value: {
-          path = [(lib.concatStringsSep "." path)];
+          path = [(sundry.str.join-with "." path)];
           value = "x";
         })
         attrs)

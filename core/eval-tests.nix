@@ -10,7 +10,7 @@ args @ {
       // {
         source =
           lib.removePrefix
-          (lib.concatStringsSep "/" (lib.init (lib.splitString "/" (toString dir-path))))
+          (sundry.str.join-with "/" (lib.init (sundry.str.split "/" (toString dir-path))))
           (toString module-path);
         number = id + 1;
       };
@@ -59,9 +59,9 @@ args @ {
   ];
 
   format-tests = test: let
-    get-lines = str: lib.splitString "\n" str;
-    join-lines = lines: lib.concatStringsSep "\n" lines;
-    pretty = lib.generators.toPretty {};
+    get-lines = str: sundry.str.split "\n" str;
+    join-lines = lines: sundry.str.join-with "\n" lines;
+    pretty = sundry.str.pretty;
 
     blocks =
       lib.mapAttrs
@@ -94,7 +94,7 @@ args @ {
     padded-blocks = block-line-map pad-right;
 
     blocks-str =
-      lib.concatStringsSep "\n\n"
+      sundry.str.join-with "\n\n"
       (lib.mapAttrsToList (name: block: join-lines block) padded-blocks);
   in ''
     < test №${toString test.meta.number} (${test.meta.type}) from '${test.meta.source}' >

@@ -16,10 +16,10 @@
             lib.pipe dir [
               (sundry.str.between "{" "}")
               (map (tag-str: let
-                tag-parts = lib.splitString ":" tag-str;
+                tag-parts = sundry.str.split ":" tag-str;
                 tag-key = lib.head tag-parts;
                 tag-value = sundry.is-null (sundry.list.excl-last tag-parts) "";
-                tag-list = lib.splitString "," tag-value;
+                tag-list = sundry.str.split "," tag-value;
               in {
                 ${tag-key} = sundry.list.un-singleton tag-list;
               }))
