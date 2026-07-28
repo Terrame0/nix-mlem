@@ -11,22 +11,14 @@
     version ? "1.0.0",
     entrypoint ? "main.py",
     entrypoint-fn ? "main",
-    deps ? [],
+    deps ? py: [],
   }: let
     target = lib.pipe entrypoint [
       sundry.vfs.path.from-str
       (sundry.vfs.path.set.ext "")
       (sundry.str.join-with ".")
     ];
-    missing-deps = lib.pipe deps [
-      (lib.filter (dep: !(lib.hasAttr dep pkgs.python3Packages)))
-      (map (dep: "'${dep}'"))
-    ];
-    dependencies =
-      if missing-deps == []
-      then lib.attrVals deps pkgs.python3Packages
-      else throw "\npython script '${pname}' has unknown dependencies: ${sundry.str.join-with ", " missing-deps}";
-    deps-str = "[${sundry.str.join-with "," (map (str: "\"${str}\"") deps)}]";
+    dependencies = deps pkgs.python3Packages;
     project-config = sundry.vfs.file.from-text ["pyproject.toml"] ''
       [build-system]
       requires = ["hatchling"]
@@ -34,7 +26,6 @@
       [project]
       name = "${pname}"
       version = "${version}"
-      dependencies = ${deps-str}
       [project.scripts]
       ${pname} = "${target}:${entrypoint-fn}"
       [tool.hatch.build.targets.wheel]
@@ -47,11 +38,10 @@
     ];
   in
     pkgs.python3Packages.buildPythonApplication {
-      inherit pname version;
+      inherit dependencies pname version;
       pyproject = true;
       src = build-tree.drv;
       build-system = [pkgs.python3Packages.hatchling];
-      inherit dependencies;
     };
   tests = [
     [
@@ -60,19 +50,11 @@
           (python {
             pname = "hello";
             source = "${flake-root}/tests/python";
-            deps = ["click"];
+            deps = py: [py.click];
           })
         ];
       } "hello 'world' > $out"))
       "hello, world!\n"
-    ]
-    [
-      (sundry.does-throw ((python {
-        pname = "missing-dep";
-        source = "${flake-root}/tests/python";
-        deps = ["not-a-real-python-dependency"];
-      }).outPath))
-      true
     ]
   ];
 }
