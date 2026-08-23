@@ -10,6 +10,7 @@ The framework ([core/glob-functions.nix](../../core/glob-functions.nix)) walks e
 |---|---|---|
 | `src/vfs/dir/reform.nix` | `sundry.vfs.dir` | `sundry.vfs.dir.reform` |
 | `src/vfs/dir/filter.nix` | `sundry.vfs.dir` | `sundry.vfs.dir.filter`, `sundry.vfs.dir.filter-within-tag` |
+| `src/vfs/dir/load-nix.nix` | `sundry.vfs.dir` | `sundry.vfs.dir.load-nix`, `sundry.vfs.dir.load-nix-with` |
 | `src/vfs/dir/select.nix` | `sundry.vfs.dir` | `sundry.vfs.dir.select-by-tag` |
 | `src/vfs/file/get-tag-pos.nix` | `sundry.vfs.file` | `sundry.vfs.file.get-tag-pos` |
 | `src/boolean/operands/tag.nix` | `sundry.boolean.operands` | `sundry.boolean.operands.tag` |

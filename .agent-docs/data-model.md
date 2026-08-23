@@ -9,7 +9,7 @@ A node is an attrset — either a **leaf** (a file) or a **directory** (a subtre
 | predicate | returns |
 |---|---|
 | `is-leaf path node` | `true` when the node has a string `text` or a string-or-derivation `origin` |
-| `is-dir path node` | `true` when every value is an attrset (so `{}` is a directory) |
+| `is-dir path node` | `true` when the node is not a leaf and every value is an attrset (so `{}` is a directory) |
 | `is-leaf-node path node` | `true` for a leaf, `false` for a directory, **throws** otherwise — this is the `cond` the traversals use |
 
 Leaf fields:
@@ -19,6 +19,9 @@ Leaf fields:
 | `text` | string | file contents, in memory |
 | `origin` | string \| derivation | the file's **last physical location on disk** — the import path after [from-src](../../src/vfs/file/from-src.nix), the store path after [materialize](../../src/vfs/dir/materialize.nix). Tracks provenance across transforms independently of the node's key path; survives `resolve-tags` stripping (so it carries the original tagged path even once the key is cleaned). |
 | `tag-list` | list of attrsets | per directory-level tags parsed from the filename — one attrset per path segment — present after `resolve-tags`; queried per [tag-matching.md](tag-matching.md) (fixture naming: [test-naming.md](test-naming.md)) |
+| `expr` | any Nix value | lazy result attached by [load-nix](../../src/vfs/dir/load-nix.nix); `load-nix-with` stores the callback result instead |
+
+`expr` is payload, not a leaf discriminator. A loaded leaf retains `text` or `origin`, which identifies it as a file without forcing `expr`. Treating the presence of `expr` alone as a leaf marker would make an expression whose value is an attrset indistinguishable from a directory named `expr`.
 
 A directory maps a path segment to a child node:
 
@@ -26,6 +29,7 @@ A directory maps a path segment to a child node:
 {
   "A.txt" = { text = "contents of A.txt"; origin = "/…/A.txt"; };  # imported: in memory + on disk
   "B.css" = { origin = "/nix/store/…-dir/B.css"; };               # materialized: store path only
+  "C.nix" = { text = "v: v + 1"; origin = "/…/C.nix"; expr = v: v + 1; };
   sub = { "C.txt" = { text = "…"; }; };        # directory: key = segment, value = node
 }
 ```
@@ -33,7 +37,10 @@ A directory maps a path segment to a child node:
 `text` and `origin` are **not** mutually exclusive across a node's life — they exclude only as a state transition:
 
 - **Imported** ([from-src](../../src/vfs/file/from-src.nix)) — the leaf carries **both** `text` (read into memory) and `origin` (where it was read from).
-- **Materialized** ([materialize](../../src/vfs/dir/materialize.nix)) — returns `{ drv, dir }`. `dir` is the evaluation-time VFS index; `drv` is the build-time materialization of that index. In `dir`, `text` is **dropped** and `origin` is overwritten with the new store path, so each materialized leaf carries `origin` alone. Dropping `text` removes any chance of it drifting from the file on disk; to get in-memory contents back, re-import. The top-level `drv` is the whole materialized directory as a Nix build artifact, while each leaf `origin` is the concrete file path inside it.
+- **Nix-loaded** ([load-nix](../../src/vfs/dir/load-nix.nix)) — retains the existing leaf fields and adds lazy `expr`. `load-nix-with fn` calls `fn path file expr` and stores its result in that field. Both functions require `origin`, operate on every input leaf regardless of extension, and leave file selection to the caller.
+- **Materialized** ([materialize](../../src/vfs/dir/materialize.nix)) — returns `{ drv, dir }`. `dir` is the evaluation-time VFS index; `drv` is the build-time materialization of that index. In `dir`, `text` is **dropped** and `origin` is overwritten with the new store path, so of those two fields each materialized leaf carries `origin` alone. Dropping `text` removes any chance of it drifting from the file on disk; to get in-memory contents back, re-import. The top-level `drv` is the whole materialized directory as a Nix build artifact, while each leaf `origin` is the concrete file path inside it.
+
+`materialize` preserves optional metadata, including `tag-list` and `expr`. Remove derived fields before materialization when they must not outlive the source state from which they were computed.
 
 ## Path
 
