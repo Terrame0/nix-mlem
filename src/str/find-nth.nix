@@ -4,7 +4,7 @@
     then null
     else
       (
-        sundry.for [0 (i: i + 1) (i: i < n)]
+        sundry.for [0 (i: i < n) (i: i + 1)]
         {offset = init-offset;}
         (prev: i: rec {
           offset = fn (step prev.offset) seq str;

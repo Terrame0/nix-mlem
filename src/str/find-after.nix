@@ -5,7 +5,7 @@
 }: let
   find-after-base = step: init-id: seq: str: let
     result =
-      sundry.for [init-id step sundry.true-fn]
+      sundry.for [init-id sundry.true-fn step]
       {pos = null;}
       (prev: i: let
         str-len = sundry.str.len str;

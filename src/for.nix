@@ -1,6 +1,6 @@
 {sundry, ...}: rec {
   for = args-list: init-state: op: let
-    decomposed = sundry.list.zip-to-attrs ["init-id" "step" "cond"] args-list;
+    decomposed = sundry.list.zip-to-attrs ["init-id" "cond" "step"] args-list;
     inherit (decomposed) init-id step cond;
     recurse = prev: i:
       if (cond i && !(prev ? break && prev.break))
@@ -11,19 +11,19 @@
 
   tests = [
     [
-      (for [1 (i: i + 1) (i: i <= 10)]
+      (for [1 (i: i <= 10) (i: i + 1)]
         {acc = 1;}
         (prev: i: {acc = i * prev.acc;}))
       {acc = 3628800;}
     ]
     [
-      (for [0 (i: i) (i: i != 0)]
+      (for [0 (i: i != 0) (i: i)]
         {value = 0;}
         (prev: i: {value = 10;}))
       {value = 0;}
     ]
     [
-      (for [0 (i: i + 1) (i: i < 10)]
+      (for [0 (i: i < 10) (i: i + 1)]
         {acc = 1;}
         (prev: i: {
           acc = i;

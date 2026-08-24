@@ -10,7 +10,7 @@
       (sundry.str.delimit lsep rsep str).inside;
     result =
       sundry.for
-      [0 (i: i + 1) (i: i < (lib.length insides))]
+      [0 (i: i < (lib.length insides)) (i: i + 1)]
       {
         inherit str;
         offset = 0;

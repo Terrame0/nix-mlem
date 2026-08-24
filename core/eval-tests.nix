@@ -82,7 +82,7 @@ args @ {
 
     pad = char: offset:
       (sundry.for
-        [offset (i: i + 1) (i: i < table-width)]
+        [offset (i: i < table-width) (i: i + 1)]
         {str = "";}
         (state: i: {str = state.str + char;})).str;
 
