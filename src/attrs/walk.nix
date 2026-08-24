@@ -14,6 +14,7 @@
   in
     recurse [] set;
   walk-until = walk-matched-until (path: value: true);
+  walk-matched = lib.flip walk-matched-until (path: value: false);
   walk = walk-until (path: value: false);
 
   tests = let
@@ -35,6 +36,18 @@
         B = "x";
         C = {D = "x";};
         E = {F = "x";};
+      }
+    ]
+    [
+      (walk-matched
+        (path: value: value != 0)
+        (path: value: "x")
+        attrs)
+      {
+        A = 0;
+        B = "x";
+        C = {D = "x";};
+        E = {F = {G = 0;};};
       }
     ]
     [

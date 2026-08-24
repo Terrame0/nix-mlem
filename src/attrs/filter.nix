@@ -12,6 +12,7 @@
       omit = !(fn path value);
     }));
   filter-until = filter-matched-until (path: value: true);
+  filter-matched = lib.flip filter-matched-until (path: value: false);
   filter = filter-until (path: value: false);
 
   tests = let
@@ -35,9 +36,8 @@
       }
     ]
     [
-      (filter-matched-until
+      (filter-matched
         (path: value: value != 0)
-        (path: value: false)
         (path: value: false)
         attrs)
       {

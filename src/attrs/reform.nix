@@ -35,6 +35,7 @@ in rec {
     ];
 
   reform-until = reform-matched-until (path: value: true);
+  reform-matched = lib.flip reform-matched-until (path: value: false);
   reform = reform-until (path: value: false);
   tests = let
     attrs = {
@@ -61,9 +62,8 @@ in rec {
       }
     ]
     [
-      (reform-matched-until
+      (reform-matched
         (path: value: value != 0)
-        (path: value: false)
         (path: value:
           if value == 1
           then {inherit path value;} // {omit = true;}
