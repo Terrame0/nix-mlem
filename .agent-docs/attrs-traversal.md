@@ -4,7 +4,7 @@ The functions under `sundry.attrs` traverse a root attrset and pass child paths 
 
 ## Terminal nodes
 
-For every child value, a traversal evaluates `halt path value` before checking whether the value is an attrset:
+For every child that a traversal visits, it evaluates `halt path value` before checking whether the value is an attrset:
 
 ```nix
 if !(halt path value) && lib.isAttrs value
@@ -21,9 +21,20 @@ The two checks have separate roles:
 
 A non-attrset remains a normal terminal value when `halt` returns `false`. A domain-specific `halt` may reject it instead. The VFS traversals pass [`sundry.vfs.is-leaf-node`](../src/vfs/node-cond.nix), which returns `true` for a leaf, returns `false` for a directory, and throws for every other value.
 
+Evaluation strictness differs by family:
+
+| family | what evaluating the result forces |
+|---|---|
+| `walk` | only demanded attrset branches; reading `result.A` need not visit sibling `B` |
+| `collapse` | the complete traversal structure, because `concatLists` must flatten every emitted sublist; callback element values remain lazy |
+| `reform` | the collapse structure and callback results far enough to validate and rebuild their paths; nested fields of emitted values can remain lazy |
+| `filter` | the collapse structure and each terminal predicate needed to decide omission; retained payload fields can remain lazy |
+
+[`does-throw`](testing.md#does-throw-does-not-catch-everything) uses `deepSeq` when a test needs every produced value forced in addition to the traversal structure.
+
 ## Predicate axes
 
-The shape-preserving families have two independent predicate axes:
+The `walk`, `reform`, and `filter` families have two independent predicate axes:
 
 | predicate | effect |
 |---|---|
@@ -41,14 +52,18 @@ This produces four variants:
 
 ## Families
 
-| family | result | terminal operation |
+| family | callback result | traversal result |
 |---|---|---|
-| [`walk`](../src/attrs/walk.nix) | attrset with the same paths | replace a value |
-| [`collapse`](../src/attrs/collapse.nix) | list | map a terminal node to a list element |
-| [`reform`](../src/attrs/reform.nix) | rebuilt attrset | move, replace, or omit a node |
-| [`filter`](../src/attrs/filter.nix) | attrset subset | retain or omit a node at its current path |
+| [`walk`](../src/attrs/walk.nix) | replacement value | attrset with each selected terminal replaced in place |
+| [`collapse`](../src/attrs/collapse.nix) | list element | flat list |
+| [`reform`](../src/attrs/reform.nix) | attrset with required `path` and `value`, plus optional `omit` | attrset rebuilt from emitted fragments |
+| [`filter`](../src/attrs/filter.nix) | boolean: retain when true | attrset subset at the original paths |
 
 `collapse` has only `collapse-until` and `collapse`. The `matches` contract leaves unmatched nodes unchanged, which requires an attrset-shaped result. An `attrs -> list` operation has no unchanged location in which to retain an unmatched node.
+
+`reform` validates that `path` is a list of strings, requires `value`, treats missing `omit` as `false`, requires `omit` to be a boolean, and rejects other result fields. It combines non-omitted fragments with `sundry.attrs.merge.recursive.no-collision`; attrset fragments can therefore combine recursively, while a collision between terminal fields throws.
+
+`collapse` emits terminals depth-first. Sibling keys follow Nix's lexicographic attribute-name order, so its output list has a deterministic path order.
 
 ## Implementation dependencies
 
