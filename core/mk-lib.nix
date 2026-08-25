@@ -9,17 +9,17 @@ args @ {
     lib.zipAttrsWith (
       name: values:
         lib.foldl
-        (acc-value: value: merge-fn name acc-value value)
+        (acc-value: value: merge-fn [name] acc-value value)
         (lib.head values)
         (lib.tail values)
     )
     attrs;
 
   merge-attrs-recursive = let
-    merge-fn = name: acc-value: value:
+    merge-fn = path: acc-value: value:
       if lib.isAttrs acc-value && lib.isAttrs value
-      then merge-attrs (next-name: merge-fn "${name}.${next-name}") [acc-value value]
-      else throw "there is a collision at '${name}'";
+      then merge-attrs (next-path: merge-fn (path ++ next-path)) [acc-value value]
+      else throw "there is a collision at '${lib.concatStringsSep "." path}'";
   in
     merge-attrs merge-fn;
 

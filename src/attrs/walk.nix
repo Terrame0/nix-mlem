@@ -5,7 +5,9 @@
         name: value: let
           path' = path ++ [name];
         in
-          if lib.isAttrs value && !(halt path' value)
+          # -- 'halt' may validate non-attrset values, so we need to evaluate it
+          # - before the recursion type guard (lib.isAttrs)
+          if !(halt path' value) && lib.isAttrs value
           then recurse path' value
           else if matches path' value
           then fn path' value

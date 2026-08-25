@@ -3,20 +3,22 @@
   lib,
   ...
 }: rec {
-  is-dir = path: attrs:
-    !is-leaf path attrs # -- to avoid forcing evaluation of lazy leaf payloads
-    && lib.all lib.id (lib.mapAttrsToList (name: value: lib.isAttrs value) attrs);
-  is-leaf = _: attrs: let
-    text = attrs.text or null;
-    origin = attrs.origin or null;
+  is-dir = path: node:
+    !is-leaf path node # -- to avoid forcing evaluation of lazy leaf payloads
+    && lib.all lib.id (lib.mapAttrsToList (name: value: lib.isAttrs value) node);
+  is-leaf = _: node: let
+    text = node.text or null;
+    origin = node.origin or null;
   in
     lib.isString text
     || lib.isString origin
     || lib.isDerivation origin;
-  is-leaf-node = path: attrs:
-    if is-leaf path attrs
+  is-leaf-node = path: node:
+    if !lib.isAttrs node
+    then throw "\nvfs directory node at '/${sundry.vfs.path.get.str path}' is not an attribute set"
+    else if is-leaf path node
     then true
-    else if is-dir path attrs
+    else if is-dir path node
     then false
     else throw "\nvfs directory node at '/${sundry.vfs.path.get.str path}' is neither a leaf nor a directory";
   tests = [
@@ -51,5 +53,6 @@
     ]
     [(is-leaf-node "..." {a = {};}) false]
     [(sundry.does-throw (is-leaf-node ["x" "y" "z"] {a = 10;})) true]
+    [(sundry.does-throw (is-leaf-node ["x" "y" "z"] 10)) true]
   ];
 }

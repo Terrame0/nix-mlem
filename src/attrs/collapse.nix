@@ -1,11 +1,22 @@
-{lib, ...}: rec {
-  collapse-until = halt: fn: set:
-    lib.pipe set [
-      (lib.mapAttrsToListRecursiveCond
-        (path: value: !(halt path value))
-        (path: value: [(fn path value)]))
-      lib.concatLists
-    ];
+{
+  lib,
+  sundry,
+  ...
+}: rec {
+  collapse-until = halt: fn: set: let
+    recurse = path: attrs:
+      lib.pipe attrs [
+        (lib.mapAttrsToList (name: value: let
+          path' = path ++ [name];
+        in
+          # -- keep this condition aligned with 'attrs.walk-matched-until'
+          if !(halt path' value) && lib.isAttrs value
+          then recurse path' value
+          else [(fn path' value)]))
+        lib.concatLists
+      ];
+  in
+    recurse [] set;
   collapse = collapse-until (path: value: false);
 
   tests = let
@@ -38,6 +49,17 @@
         ["C" "D"]
         ["E" "F" "G"]
       ]
+    ]
+    [
+      # -- exists to validate that 'halt' is called for non-attrset terminal values
+      (sundry.does-throw (collapse-until
+        (path: value:
+          if lib.isAttrs value
+          then false
+          else throw "halt called for a scalar at '${lib.concatStringsSep "." path}'")
+        (path: value: value)
+        {A = 0;}))
+      true
     ]
   ];
 }

@@ -3,7 +3,7 @@
   lib,
   ...
 }: {
-  base.concat = name: lhs: rhs:
+  base.concat = path: lhs: rhs:
     lib.toList lhs ++ lib.toList rhs;
   tests = [
     [

@@ -3,10 +3,10 @@
   lib,
   ...
 }: {
-  concat-lists = default: name: lhs: rhs:
+  concat-lists = resolve-next: path: lhs: rhs:
     if lib.isList lhs && lib.isList rhs
     then lhs ++ rhs
-    else default name lhs rhs;
+    else resolve-next path lhs rhs;
   tests = [
     [
       (sundry.attrs.merge.concat-lists.override [{A = [1 2];} {A = [3];}])

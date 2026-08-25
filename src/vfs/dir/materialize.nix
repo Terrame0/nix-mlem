@@ -74,7 +74,7 @@
       (sundry.does-throw
         (materialize "missing-text" {
           "A.txt" = {origin = "/tmp/A.txt";};
-        }).drv)
+        }))
       true
     ]
   ];

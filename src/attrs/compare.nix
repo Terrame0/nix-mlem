@@ -5,10 +5,10 @@
 }: let
   compare-base = cond: val: ref:
     sundry.attrs.merge-with-resolvers (with sundry.attrs.merge-resolvers; [
-      (default: name: val: ref:
-        if name == "missing"
+      (resolve-next: path: val: ref:
+        if path == ["missing"]
         then sundry.attrs.remove-by-path ref val
-        else default name val ref)
+        else resolve-next path val ref)
       recursive
       base.no-collision
     ])

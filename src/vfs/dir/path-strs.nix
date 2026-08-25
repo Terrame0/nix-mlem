@@ -17,5 +17,11 @@
         "B.txt"
       ]
     ]
+    [
+      (sundry.does-throw (path-strs {
+        invalid = "abc";
+      }))
+      true
+    ]
   ];
 }
