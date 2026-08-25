@@ -5,7 +5,7 @@ A utility Nix library (`sundry.*`), assembled from files under `src/` where the 
 ## Before working, read the relevant doc in `.agent-docs/`
 
 - [data-model.md](.agent-docs/data-model.md) — the VFS node shapes (leaf vs. directory, `text`/`origin`/`tag-list`) and path shapes (segment lists).
-- [vfs-lifecycle.md](.agent-docs/vfs-lifecycle.md) — VFS constructors and the import, tag-resolution, Nix-loading, and materialization stages.
+- [vfs-lifecycle.md](.agent-docs/vfs-lifecycle.md) — VFS constructors, multi-source tree assembly, and the import, tag-resolution, Nix-loading, and materialization stages.
 - [tag-resolution.md](.agent-docs/tag-resolution.md) — how `{key:value}` annotations in path segments become cleaned paths and per-segment `tag-list` entries.
 - [tag-matching.md](.agent-docs/tag-matching.md) — tag-spec query semantics, including `tag` concatenation, `deepest-tag` override, per-level position, and `boolean.expr` binding.
 - [attrs-traversal.md](.agent-docs/attrs-traversal.md) — attrset traversal terminal-node semantics, the `halt`/`matches` axes, specialization matrix, and implementation dependencies.

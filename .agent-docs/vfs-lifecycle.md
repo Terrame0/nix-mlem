@@ -13,6 +13,24 @@ sundry.vfs.file.from-text ["A" "B.txt"] "contents"
 
 Both require a non-empty VFS path. `from-text` adds `text`; `from-src` reads the physical file and adds both `text` and `origin`. `from-src` stores its `fs-path` argument unchanged. A raw Nix path therefore produces a path-typed `origin`: the imported node remains a leaf because `text` is present, but that `origin` would not classify it as a leaf on its own. [`dir.from-src`](../src/vfs/dir/from-src.nix) imports every physical file below a directory at its relative VFS path and combines the one-file trees with `recursive.no-collision`.
 
+## Assemble first, interpret later
+
+Construction and semantic interpretation are separate stages. `from-src` is one way to populate a VFS, not the owner of the later lifecycle. A caller can assemble one tree from several physical directories, individual files, and leaves generated in Nix expressions. Generated leaves can hold design-system partials or other artifacts that do not exist in any source directory.
+
+For example, the VFS-aware merge resolver described in [attrs-merge.md](attrs-merge.md) can combine several imported trees with a generated file:
+
+```nix
+sundry.attrs.merge.directories.no-collision [
+  (sundry.vfs.dir.from-src source-a)
+  (sundry.vfs.dir.from-src source-b)
+  (sundry.vfs.file.from-text
+    ["components{kind:partial}" "_tokens.scss"]
+    generated-tokens)
+]
+```
+
+Run `resolve-tags` after assembly so every source follows the same logical-path and tag rules. Keep `load-nix` as a separate stage because importability is a property of an individual leaf: physical leaves can have `origin`, while generated text leaves do not have one unless they are materialized first. The caller can select the intended Nix leaves, materialize generated Nix files when necessary, and load only that subset without forcing unrelated generated files through `from-src` or `load-nix`.
+
 ## Transformation stages
 
 | operation | input requirement | leaf fields after the operation |
