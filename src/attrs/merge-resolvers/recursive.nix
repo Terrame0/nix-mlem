@@ -21,5 +21,15 @@
         };
       }
     ]
+    [
+      (sundry.attrs.merge-with-resolvers [
+          recursive
+          (path: lhs: rhs: path)
+        ] [
+          {A."B.C" = 1;}
+          {A."B.C" = 2;}
+        ])
+      {A."B.C" = ["A" "B.C"];}
+    ]
   ];
 }

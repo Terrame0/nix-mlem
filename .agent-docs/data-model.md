@@ -10,7 +10,7 @@ A node is an attrset — either a **leaf** (a file) or a **directory** (a subtre
 |---|---|
 | `is-leaf path node` | `true` when the node has a string `text` or a string-or-derivation `origin` |
 | `is-dir path node` | `true` when the node is not a leaf and every value is an attrset (so `{}` is a directory) |
-| `is-leaf-node path node` | `true` for a leaf, `false` for a directory, **throws** otherwise — this is the `cond` the traversals use |
+| `is-leaf-node path node` | `true` for a leaf, `false` for a directory, **throws** for a non-attrset or malformed attrset — this is the `halt` predicate the traversals use |
 
 Leaf fields:
 
@@ -66,6 +66,8 @@ Stem/ext split on `.` with the **last** component as the ext: `archive.tar.gz` �
 
 ## Traversals
 
-`sundry.vfs.dir.{walk, collapse, reform, filter, path-strs}` recurse while a node is a directory and stop at leaves, using `is-leaf-node` as the `cond`. A malformed node (neither leaf nor directory) throws with its path instead of overflowing the stack.
+`sundry.vfs.dir.{walk, collapse, reform, filter, path-strs}` recurse while a node is a directory and stop at leaves, using `is-leaf-node` as `halt`. Traversals evaluate `halt` for every child value before checking whether attrset recursion is structurally possible, so a non-attrset child and a malformed attrset both throw with their path. The root attrset is the traversal container and is not passed to `halt`.
+
+The generic traversal contract, specialization matrix, and implementation dependencies are documented in [attrs-traversal.md](attrs-traversal.md).
 
 `sundry.vfs.dir.materialize` consumes a VFS directory and returns `{ drv, dir }`: keep piping through `result.dir` for more VFS directory operations, or use `result.drv` when a Nix derivation for the whole materialized directory is needed.

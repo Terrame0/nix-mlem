@@ -45,7 +45,9 @@ What does *not* warrant a test: alternative spellings of the happy path that don
 
 ## `does-throw` does not catch everything
 
-[`sundry.does-throw`](../../src/does-throw.nix) wraps `builtins.tryEval`, which catches only `throw` and `abort`. It does **not** catch Nix evaluator errors raised by built-ins, such as:
+[`sundry.does-throw`](../../src/does-throw.nix) deeply evaluates its argument with `builtins.deepSeq` before inspecting `builtins.tryEval`. Explicit errors inside lazy attrset fields or list elements are therefore observable without selecting each nested value in the test expression.
+
+`builtins.tryEval` catches only `throw` and `abort`. It does **not** catch Nix evaluator errors raised by built-ins, such as:
 
 - `builtins.head []`, `builtins.tail []`, `builtins.elemAt list i` out of range
 - `attrs.${missing-key}`, `lib.getAttrFromPath` on a non-existent path
