@@ -3,7 +3,7 @@
   sundry,
   ...
 }: let
-  compare-base = cond: val: ref:
+  compare-base = halt: val: ref:
     sundry.attrs.merge-with-resolvers (with sundry.attrs.merge-resolvers; [
       (resolve-next: path: val: ref:
         if path == ["missing"]
@@ -22,13 +22,13 @@
       ]
       ++ (lib.mapAttrsToListRecursiveCond
         # -- only recurse when ref also has an attrset here
-        # otherwise treat val subtree as a leaf
+        # - otherwise treat val subtree as a leaf
         (path: _: let
           ref-value = lib.getAttrFromPath path ref;
         in
           lib.hasAttrByPath path ref
           && lib.isAttrs ref-value
-          && cond ref-value)
+          && !(halt ref-value))
         (path: value:
           if lib.hasAttrByPath path ref
           then {
@@ -39,7 +39,7 @@
         val)
     );
 in rec {
-  compare = compare-base lib.isAttrs;
+  compare = compare-base (_: false);
   compare-until = compare-base;
 
   tests = [
@@ -96,6 +96,35 @@ in rec {
       {
         extra = {};
         matched = {};
+        missing = {};
+      }
+    ]
+    [
+      (compare-until
+        (ref-value: ref-value ? stop)
+        {
+          A.B = 1;
+          C.D = 2;
+        }
+        {
+          A.B = 3;
+          C = {
+            stop = true;
+            D = 4;
+          };
+        })
+      {
+        extra = {};
+        matched = {
+          A.B = [1 3];
+          C = [
+            {D = 2;}
+            {
+              stop = true;
+              D = 4;
+            }
+          ];
+        };
         missing = {};
       }
     ]

@@ -24,9 +24,9 @@ sundry.attrs.compare { A.B = 1; C = 2; } { A = 0; D = 3; }
 # missing.D = 3
 ```
 
-`compare` fixes that predicate to `lib.isAttrs`. `compare-until cond` exposes it; unlike traversal `halt`, `cond ref-value = true` means **recurse into** that reference attrset.
+`compare` recurses through every attrset shared by `val` and `ref`. `compare-until halt` exposes an early-stop predicate: when `halt ref-value` is true, the complete `val` subtree and corresponding `ref` subtree are treated as one terminal pair.
 
-## Validation template leaves
+## Validation attribute specs
 
 [`sundry.attrs.validate`](../src/attrs/validate.nix) takes a template first and a value attrset second:
 
@@ -34,31 +34,33 @@ sundry.attrs.compare { A.B = 1; C = 2; } { A = 0; D = 3; }
 sundry.attrs.validate {
   name = {};
   count = {
-    default = 1;
+    default = _: 1;
     check = lib.isInt;
     desc = "must be an integer";
   };
   note = {
-    default = null;
+    default = _: null;
     nullable = true;
   };
 } attrs
 ```
 
-A template leaf is either `{}` or an attrset containing `check` or `default`. Any other non-empty attrset is a nested template branch. A leaf may contain only these fields:
+A terminal attribute spec is either `{}` or an attrset containing `check` or `default`. Any other non-empty attrset is a nested template branch. A spec may contain only these fields:
 
 | field | contract |
 |---|---|
-| `default` | makes the input field optional; when inserted, the default goes through the same check as input |
+| `default` | function from the final result attrset to a fallback value; makes the input field optional, and the result goes through the same check as input |
 | `check` | value predicate; when called, its result is asserted to be a boolean |
 | `desc` | required when `check` is about to run; used in the failure message |
 | `nullable` | when true, `null` passes before `desc` is required or `check` is called |
 
-An empty leaf spec `{}` therefore means “required, any value”. A field without `default` is required. A spec containing only `desc` or `nullable` is interpreted as a branch rather than a leaf and is invalid once its scalar fields are examined.
+An empty spec `{}` therefore means “required, any value”. A field without `default` is required. A spec containing only `desc` or `nullable` is interpreted as a template branch and is invalid once its scalar fields are examined.
 
-`check` and `default` are structural markers, not ordinary nested field names: an attrset containing either is classified as one leaf spec and cannot simultaneously describe child template fields.
+`check` and `default` are structural markers, not ordinary nested field names: an attrset containing either is classified as one attribute spec and cannot simultaneously describe child template fields.
 
-Template normalization restricts field names but does not eagerly validate the types of `check`, `desc`, or `nullable`. Those contracts are enforced only along the value path that uses them. In particular, an unused default remains lazy, and a nullable `null` can bypass a missing `desc` and the associated `check`.
+Defaults form a lazy fixed point over the completed result. Each default function receives that result as its argument, so it can refer to supplied fields and to other defaults regardless of their template position. The function is called only when its field is absent from the input. Cyclic default dependencies fail when the cycle is forced.
+
+Template validation restricts spec field names but does not eagerly validate the types of `check`, `desc`, or `nullable`. Those contracts are enforced only along the value path that uses them. In particular, an unused default function remains lazy, and a nullable `null` can bypass a missing `desc` and the associated `check`.
 
 Validation rejects input paths absent from the template and required template paths absent from the input. On success it returns the input shape completed with defaults. A `check` result of a non-boolean type fails an assertion.
 

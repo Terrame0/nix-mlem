@@ -5,11 +5,11 @@
 }: rec {
   resolve-deps = transforms: let
     layers = lib.pipe transforms [
-      (lib.mapAttrsToList (name: value-in: let
+      (lib.mapAttrsToList (name: value': let
         value =
           sundry.attrs.validate {
             deps = {
-              default = [];
+              default = _: [];
               check = value: lib.isList value && lib.all lib.isString value;
               desc = "must be a list of strings that represent the stage's dependencies";
             };
@@ -18,7 +18,7 @@
               desc = "must be a transformation function";
             };
           }
-          value-in;
+          value';
       in {
         inherit name;
         inherit (value) deps;

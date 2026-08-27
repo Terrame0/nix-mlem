@@ -2,12 +2,15 @@
   description = "a nixos utility library";
   inputs = {};
   outputs = {self, ...}: let
-    module-args = args:
-      args
-      // {
-        inherit (args.pkgs) lib;
-        flake-root = self.outPath;
-      };
+    module-args = args': let
+      args =
+        args'
+        // {
+          inherit (args'.pkgs) lib;
+          flake-root = self.outPath;
+        };
+    in
+      args;
   in rec {
     mk-lib = {pkgs}:
       pkgs.lib.fix (self:

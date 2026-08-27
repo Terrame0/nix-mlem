@@ -3,97 +3,89 @@
   sundry,
   ...
 }: let
-  not-leaf = attrs:
-    lib.isAttrs attrs
-    && !(attrs ? check
-      || attrs ? default
-      || attrs == {});
-  compare-until-leaf = sundry.attrs.compare-until not-leaf;
-  collapse-until =
-    lib.mapAttrsToListRecursiveCond (path: not-leaf);
-  filter-map = fn: attrs:
-    lib.pipe attrs [
-      (collapse-until
-        (path: attrs: let
-          result = fn path attrs;
-        in
-          if !result.omit
-          then
-            lib.setAttrByPath
-            path
-            result.value
-          else {}))
-      lib.mergeAttrsList
-    ];
-  concat-path = strs: sundry.str.join-with " -> " (map (str: "'${str}'") strs);
-  format = lib.generators.toPretty {multiline = false;};
+  is-spec = value:
+    lib.isAttrs value
+    && (
+      value
+      == {}
+      || value ? check
+      || value ? default
+    );
+  compare-until-spec = sundry.attrs.compare-until is-spec;
+  collapse-until-spec = sundry.attrs.collapse-until (_: is-spec);
+  format-path = strs: sundry.str.join-with "." (map (str: "'${str}'") strs);
+  format-value = lib.generators.toPretty {multiline = false;};
 in rec {
-  validate = template-in: attrs: let
-    template = lib.mapAttrsRecursiveCond not-leaf (path: value: let
-      structure-msg = ''
-        'check' - an attribute value validation function
-        'desc' - a description of a valid value
-        'default' - a default attribute value
-        'nullable' - a flag that indicates whether the value can be null
-      '';
-    in
-      if !(lib.isAttrs value)
-      then
-        throw ''
-          an attribute template must be an attribute set with the following structure:
-          ${structure-msg}
-        ''
-      else if
-        (compare-until-leaf value {
-          check = null;
-          desc = null;
-          default = null;
-          nullable = null;
-        }).extra
-        == {}
-      then value
-      else
-        throw ''
-          an attribute template can only have the following attributes:
-          ${structure-msg}
-        '')
-    template-in;
+  validate = template': attrs: let
+    template =
+      sundry.attrs.walk-until
+      (_: is-spec)
+      (_: value: let
+        spec-structure-msg = ''
+          'check' - an attribute value validation function
+          'desc' - a description of a valid value
+          'default' - a function from the final result attribute set to a default attribute value
+          'nullable' - a flag that indicates whether the value can be null
+        '';
+      in
+        if !(lib.isAttrs value)
+        then
+          throw ''
+            an attribute set template must be an attribute set with the following structure:
+            ${spec-structure-msg}
+          ''
+        else if
+          (sundry.attrs.compare value {
+            check = null;
+            desc = null;
+            default = null;
+            nullable = null;
+          }).extra
+          == {}
+        then value
+        else
+          throw ''
+            an attribute set template can only have the following attributes:
+            ${spec-structure-msg}
+          '')
+      template';
 
-    compared-with-template = compare-until-leaf attrs template;
+    comparison = compare-until-spec attrs template;
 
-    defaults =
-      filter-map (
-        path: value: {
-          value = [value.default value];
-          omit = !(value ? default);
-        }
-      )
-      compared-with-template.missing;
-
-    matched-with-defaults =
+    default-pairs = lib.pipe comparison.missing [
+      (collapse-until-spec
+        (path: spec:
+          if spec ? default
+          then lib.setAttrByPath path [(spec.default result) spec]
+          else {}))
       sundry.attrs.merge.recursive.no-collision
-      [compared-with-template.matched defaults];
+    ];
 
-    missing =
+    value-spec-pairs =
+      sundry.attrs.merge.recursive.no-collision
+      [comparison.matched default-pairs];
+
+    missing-msg = lib.pipe comparison.missing [
+      (collapse-until-spec
+        (path: spec:
+          lib.optional
+          (!(spec ? default))
+          "  ${format-path path} | ${spec.desc or "..."}"))
+      lib.concatLists
+      (sundry.str.join-with "\n")
+    ];
+
+    extra-msg =
       lib.pipe
-      (compare-until-leaf defaults compared-with-template.missing).missing
+      comparison.extra
       [
-        (collapse-until
-          (path: value: "  ${concat-path path} | ${value.desc or "..."}"))
+        (collapse-until-spec
+          (path: value: "  ${format-path path} = ${format-value value}"))
         (sundry.str.join-with "\n")
       ];
 
-    extra =
-      lib.pipe
-      compared-with-template.extra
-      [
-        (collapse-until
-          (path: value: "  ${concat-path path} = ${format value}"))
-        (sundry.str.join-with "\n")
-      ];
-
-    did-not-pass = lib.pipe matched-with-defaults [
-      (collapse-until (
+    check-failures-msg = lib.pipe value-spec-pairs [
+      (collapse-until-spec (
         path: pair: let
           decomposed = sundry.list.zip-to-attrs ["value" "spec"] pair;
           inherit (decomposed) value spec;
@@ -108,30 +100,30 @@ in rec {
         in
           if passed
           then []
-          else ["  ${concat-path path} = ${format value} | ${spec.desc}"]
+          else ["  ${format-path path} = ${format-value value} | ${spec.desc}"]
       ))
       lib.concatLists
       (sundry.str.join-with "\n")
     ];
-    values =
-      lib.mapAttrsRecursive
-      (path: pair: sundry.list.at 0 pair)
-      matched-with-defaults;
+    result =
+      sundry.attrs.walk
+      (_: pair: sundry.list.at 0 pair)
+      value-spec-pairs;
   in
     lib.foldl
     sundry.check-success
-    values [
+    result [
       {
-        success = did-not-pass == "";
-        error-msg = "incorrect attribute values:\n${did-not-pass}";
+        success = check-failures-msg == "";
+        error-msg = "incorrect attribute values:\n${check-failures-msg}";
       }
       {
-        success = extra == "";
-        error-msg = "got extra attributes:\n${extra}";
+        success = extra-msg == "";
+        error-msg = "got extra attributes:\n${extra-msg}";
       }
       {
-        success = missing == "";
-        error-msg = "missing attributes:\n${missing}";
+        success = missing-msg == "";
+        error-msg = "missing attributes:\n${missing-msg}";
       }
     ];
 
@@ -145,12 +137,12 @@ in rec {
             desc = "must be odd";
           };
           B = {
-            default = null;
+            default = _: null;
             nullable = true;
           };
           C = {
             D = {
-              default = 3;
+              default = self: self.A + self.B;
               check = value: lib.mod value 3 == 0;
               desc = "must be divisible by 3";
             };
@@ -170,6 +162,48 @@ in rec {
       }
     ]
     [
+      (
+        validate
+        {
+          A = {
+            default = self: self.B + 1;
+          };
+          B = {
+            default = self: self.C + 1;
+          };
+          C = {};
+        }
+        {C = 1;}
+      )
+      {
+        A = 3;
+        B = 2;
+        C = 1;
+      }
+    ]
+    [
+      (
+        validate
+        {
+          A = {
+            B = {
+              default = _: 1;
+            };
+            C = {
+              default = _: 2;
+            };
+          };
+        }
+        {}
+      )
+      {
+        A = {
+          B = 1;
+          C = 2;
+        };
+      }
+    ]
+    [
       (sundry.does-throw (
         validate
         {
@@ -185,7 +219,7 @@ in rec {
         validate
         {
           A = {
-            default = 2;
+            default = _: 2;
             check = value: lib.mod value 2 == 0;
             desc = "must be even";
           };
@@ -204,6 +238,20 @@ in rec {
           A = 1;
           B = 2;
         }
+      ))
+      true
+    ]
+    [
+      (sundry.does-throw (
+        validate
+        {
+          A = {
+            check = lib.isInt;
+            desc = "must be an integer";
+            unexpected = true;
+          };
+        }
+        {A = 1;}
       ))
       true
     ]

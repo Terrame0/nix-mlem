@@ -12,7 +12,7 @@
     };
     value = {};
     omit = {
-      default = false;
+      default = _: false;
       check = value: lib.isBool value;
       desc = "must be either 'true' or 'false'";
     };
@@ -23,7 +23,8 @@ in rec {
       (sundry.attrs.collapse-until
         halt
         (path: value: let
-          result = validate-leaf (fn path value);
+          result' = fn path value;
+          result = validate-leaf result';
         in
           if matches path value
           then
